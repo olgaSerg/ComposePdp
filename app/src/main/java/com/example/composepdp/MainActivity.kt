@@ -12,6 +12,9 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -57,6 +60,7 @@ import com.example.composepdp.state.UiState
 import com.example.composepdp.ui.theme.ComposePdpTheme
 import com.example.composepdp.viewmodel.MainViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.composepdp.viewmodel.model.DishItem
 
 private const val DURATION_ANIMATION = 1000
 private const val SHIMMER_OFFSET = 300f
@@ -83,14 +87,24 @@ class MainActivity : ComponentActivity() {
             AnimatedContent(
                 targetState = uiState,
                 transitionSpec = {
-                    fadeIn(animationSpec = tween(DURATION_ANIMATION)) togetherWith
-                        fadeOut(animationSpec = tween(DURATION_ANIMATION))
+                    when {
+                        initialState is UiState.Loading && targetState is UiState.Success ->
+                            slideInVertically { it } + fadeIn() togetherWith fadeOut()
+
+                        initialState is UiState.Success && targetState is UiState.Error ->
+                            slideInHorizontally { -it } + fadeIn() togetherWith fadeOut()
+
+                        initialState is UiState.Error && targetState is UiState.Loading ->
+                            scaleIn() + fadeIn() togetherWith fadeOut()
+
+                        else -> fadeIn() togetherWith fadeOut()
+                    }
                 },
                 modifier = Modifier.weight(1f)
             ) { state ->
                 when (state) {
                     is UiState.Loading -> LoadingScreen()
-                    is UiState.Success -> SuccessScreen(state, viewModel)
+                    is UiState.Success -> SuccessScreen(viewModel)
                     is UiState.Error -> ErrorScreen { viewModel.loadData() }
                 }
             }
@@ -119,17 +133,23 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun SuccessScreen(state: UiState.Success, viewModel: MainViewModel) {
+    fun SuccessScreen(viewModel: MainViewModel) {
+        val items = viewModel.items
+
         Column(modifier = Modifier.fillMaxSize()) {
             LazyColumn(modifier = Modifier.weight(1f)) {
-                items(state.items) { item ->
+                items(
+                    items,
+                    key = { it.id }
+                ) { item ->
                     ItemCard(
                         item = item,
-                        selectedItems = state.selectedItems,
                         onItemClick = { viewModel.toggleSelection(it) },
-                        onItemLongClick = { viewModel.removeItem(it) })
+                        onItemLongClick = { viewModel.removeItem(it) }
+                    )
                 }
             }
+
             RefreshButton { viewModel.loadData() }
         }
     }
@@ -137,12 +157,11 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
     fun ItemCard(
-        item: String,
-        selectedItems: List<String>,
-        onItemClick: (String) -> Unit,
-        onItemLongClick: (String) -> Unit
+        item: DishItem,
+        onItemClick: (DishItem) -> Unit,
+        onItemLongClick: (DishItem) -> Unit
     ) {
-        val isSelected = selectedItems.contains(item)
+        val isSelected = item.isSelected
 
         Box(
             modifier = Modifier
@@ -164,7 +183,7 @@ class MainActivity : ComponentActivity() {
                 )
                 .padding(dimensionResource(id = R.dimen.padding_medium))
         ) {
-            Text(text = item, fontSize = dimensionResource(id = R.dimen.text_size_medium).value.sp, color = Color.White)
+            Text(text = item.name, fontSize = dimensionResource(id = R.dimen.text_size_medium).value.sp, color = Color.White)
         }
     }
 
