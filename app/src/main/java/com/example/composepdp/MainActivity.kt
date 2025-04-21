@@ -45,6 +45,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -104,7 +105,7 @@ class MainActivity : ComponentActivity() {
             ) { state ->
                 when (state) {
                     is UiState.Loading -> LoadingScreen()
-                    is UiState.Success -> SuccessScreen(viewModel)
+                    is UiState.Success -> SuccessScreen(viewModel, state.dishes)
                     is UiState.Error -> ErrorScreen { viewModel.loadData() }
                 }
             }
@@ -133,9 +134,7 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun SuccessScreen(viewModel: MainViewModel) {
-        val items = viewModel.items
-
+    fun SuccessScreen(viewModel: MainViewModel, items: List<DishItem>) {
         Column(modifier = Modifier.fillMaxSize()) {
             LazyColumn(modifier = Modifier.weight(1f)) {
                 items(
@@ -189,23 +188,27 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun LoadingScreen() {
+        val skeletonWidths = remember {
+            List(SKELETON_LINES_COUNT) {
+                listOf(0.4f, 0.6f, 0.8f, 0.9f).random()
+            }
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(dimensionResource(id = R.dimen.padding_medium)),
             verticalArrangement = Arrangement.Top
         ) {
-            repeat(SKELETON_LINES_COUNT) {
-                SkeletonLine()
+            skeletonWidths.forEach { widthFraction ->
+                SkeletonLine(widthFraction)
                 Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.spacer)))
             }
         }
     }
 
     @Composable
-    fun SkeletonLine() {
-        val widthFraction = remember { listOf(0.4f, 0.6f, 0.8f, 0.9f).random() }
-
+    fun SkeletonLine(widthFraction: Float) {
         Box(
             modifier = Modifier
                 .fillMaxWidth(widthFraction)
@@ -227,8 +230,8 @@ class MainActivity : ComponentActivity() {
             )
         )
 
-        return background(
-            brush = Brush.linearGradient(
+        return drawWithCache {
+            val brush = Brush.linearGradient(
                 colors = listOf(
                     Color.Gray.copy(alpha = 0.3f),
                     Color.LightGray.copy(alpha = 0.5f),
@@ -237,7 +240,10 @@ class MainActivity : ComponentActivity() {
                 start = Offset(shimmerTranslate, 0f),
                 end = Offset(shimmerTranslate + SHIMMER_OFFSET, 0f)
             )
-        )
+            onDrawBehind {
+                drawRect(brush = brush)
+            }
+        }
     }
 
     @Composable

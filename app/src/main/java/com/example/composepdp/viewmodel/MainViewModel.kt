@@ -16,7 +16,7 @@ class MainViewModel : ViewModel() {
     private val _uiState = mutableStateOf<UiState>(UiState.Loading)
     val uiState: State<UiState> = _uiState
 
-    val items = mutableStateListOf<DishItem>()
+    private val items = mutableStateListOf<DishItem>()
 
     init {
         loadData()
@@ -30,7 +30,7 @@ class MainViewModel : ViewModel() {
             if (success) {
                 items.clear()
                 items.addAll(DishConstants.DEFAULT_DISHES)
-                _uiState.value = UiState.Success
+                updateUiState()
             } else {
                 _uiState.value = UiState.Error
             }
@@ -40,11 +40,20 @@ class MainViewModel : ViewModel() {
     fun toggleSelection(item: DishItem) {
         val index = items.indexOfFirst { it.id == item.id }
         if (index != -1) {
-            items[index] = item.copy(isSelected = !item.isSelected)
+            val updatedItem = items[index].copy(isSelected = !items[index].isSelected)
+            items[index] = updatedItem
+            updateUiState()
         }
     }
 
     fun removeItem(item: DishItem) {
-        items.removeAll { it.id == item.id }
+        val removed = items.remove(item)
+        if (removed) {
+            updateUiState()
+        }
+    }
+
+    private fun updateUiState() {
+        _uiState.value = UiState.Success(items)
     }
 }
