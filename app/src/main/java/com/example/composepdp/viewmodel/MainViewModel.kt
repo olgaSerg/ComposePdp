@@ -29,7 +29,7 @@ class MainViewModel : ViewModel() {
             val success = (0..1).random() == 1
             if (success) {
                 items.clear()
-                items.addAll(DishConstants.DEFAULT_DISHES)
+                items.addAll(DishConstants.getDefaultDishes())
                 updateUiState()
             } else {
                 _uiState.value = UiState.Error
@@ -40,17 +40,12 @@ class MainViewModel : ViewModel() {
     fun toggleSelection(item: DishItem) {
         val index = items.indexOfFirst { it.id == item.id }
         if (index != -1) {
-            val updatedItem = items[index].copy(isSelected = !items[index].isSelected)
-            items[index] = updatedItem
-            updateUiState()
+            items[index].isSelected.value = !items[index].isSelected.value
         }
     }
 
     fun removeItem(item: DishItem) {
-        val removed = items.remove(item)
-        if (removed) {
-            updateUiState()
-        }
+        items.remove(item)
     }
 
     private fun updateUiState() {

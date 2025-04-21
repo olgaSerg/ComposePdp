@@ -3,7 +3,7 @@ package com.example.composepdp.utils
 import com.example.composepdp.viewmodel.model.DishItem
 
 object DishConstants {
-    val DEFAULT_DISHES = listOf(
+    private val dishes = listOf(
         "Паста Карбонара",
         "Суши Филадельфия",
         "Том Ям",
@@ -26,7 +26,11 @@ object DishConstants {
         "Гаспачо",
         "Курица терияки",
         "Мороженое пломбир"
-    ).mapIndexed { index, name ->
-        DishItem(id = index, name = name)
+    )
+
+    fun getDefaultDishes(): List<DishItem> {
+        return dishes.mapIndexed { index, name ->
+            DishItem(id = index, name = name)
+        }
     }
 }

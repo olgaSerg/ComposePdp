@@ -100,8 +100,7 @@ class MainActivity : ComponentActivity() {
 
                         else -> fadeIn() togetherWith fadeOut()
                     }
-                },
-                modifier = Modifier.weight(1f)
+                }
             ) { state ->
                 when (state) {
                     is UiState.Loading -> LoadingScreen()
@@ -171,11 +170,11 @@ class MainActivity : ComponentActivity() {
                 )
                 .border(
                     dimensionResource(id = R.dimen.border_size),
-                    if (isSelected) colorResource(id = R.color.selected_border_color) else Color.Transparent,
+                    if (isSelected.value) colorResource(id = R.color.selected_border_color) else Color.Transparent,
                     RoundedCornerShape(dimensionResource(id = R.dimen.corner_radius))
                 )
                 .clip(RoundedCornerShape(dimensionResource(id = R.dimen.corner_radius)))
-                .background(if (isSelected) colorResource(id = R.color.selected_background_color) else colorResource(id = R.color.default_background_color))
+                .background(if (isSelected.value) colorResource(id = R.color.selected_background_color) else colorResource(id = R.color.default_background_color))
                 .combinedClickable(
                     onClick = { onItemClick(item) },
                     onLongClick = { onItemLongClick(item) }
