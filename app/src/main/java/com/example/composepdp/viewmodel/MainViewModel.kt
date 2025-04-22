@@ -38,10 +38,7 @@ class MainViewModel : ViewModel() {
     }
 
     fun toggleSelection(item: DishItem) {
-        val index = items.indexOfFirst { it.id == item.id }
-        if (index != -1) {
-            items[index].isSelected.value = !items[index].isSelected.value
-        }
+        item.isSelected.value = !item.isSelected.value
     }
 
     fun removeItem(item: DishItem) {

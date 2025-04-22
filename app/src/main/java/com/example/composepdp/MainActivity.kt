@@ -45,7 +45,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -229,8 +229,8 @@ class MainActivity : ComponentActivity() {
             )
         )
 
-        return drawWithCache {
-            val brush = Brush.linearGradient(
+        return drawBehind {
+            Brush.linearGradient(
                 colors = listOf(
                     Color.Gray.copy(alpha = 0.3f),
                     Color.LightGray.copy(alpha = 0.5f),
@@ -239,9 +239,6 @@ class MainActivity : ComponentActivity() {
                 start = Offset(shimmerTranslate, 0f),
                 end = Offset(shimmerTranslate + SHIMMER_OFFSET, 0f)
             )
-            onDrawBehind {
-                drawRect(brush = brush)
-            }
         }
     }
 
